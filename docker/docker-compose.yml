@@ -1,0 +1,22 @@
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: task_postgres
+    environment: 
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tasks_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  
+  redis:
+    image: redis:7
+    container_name: task_redis
+    ports:
+      - "6380:6380"
+
+volumes:
+  postgres_data:
