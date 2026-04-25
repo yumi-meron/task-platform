@@ -2,9 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from uuid import UUID
 
+from app.models.task import TaskStatus
 from app.services.task_service import TaskService
 from app.schemas.task import TaskCreate, TaskListResponse, TaskResponse
 from app.db.deps import get_db
+from app.worker.tasks import process_task
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -35,4 +37,18 @@ def list_tasks(
     tasks, total = service.get_all_tasks(limit, offset, status)
     return {"tasks" : tasks, "total" : total}
 
+@router.post("/{task_id}/retry", response_model=TaskResponse)
+def retry_task(task_id : UUID, db: Session = Depends(get_db)):
+    service = TaskService(db)
+    task = service.manual_retry(task_id)
 
+    if not task:
+        raise HTTPException(status_code=404, detail = "Task not found")
+
+    if task.status != TaskStatus.failed:
+        raise HTTPException(
+            status_code=400,
+            detail= f"Only failed tasks can be retried. Current status: {task.status}"
+        )
+
+    return task
