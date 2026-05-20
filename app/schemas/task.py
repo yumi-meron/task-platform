@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from uuid import UUID
-from typing import Any,Dict,List
+from typing import Any,Dict,List, Optional
 from app.models.task import TaskStatus
 
 # What the user sends to create a task
@@ -17,7 +17,7 @@ class TaskResponse(BaseModel):
     priority: int
     retries: int
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True # This tells Pydantic to read data from SQLAlchemy objects
